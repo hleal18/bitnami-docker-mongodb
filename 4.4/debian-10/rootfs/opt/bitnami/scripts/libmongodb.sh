@@ -590,7 +590,9 @@ mongodb_is_secondary_node_pending() {
     local node="${1:?node is required}"
     local result
 
-    result=$(mongodb_execute "$MONGODB_INITIAL_PRIMARY_ROOT_USER" "$MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD" "admin" "$MONGODB_INITIAL_PRIMARY_HOST" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" <<EOF
+    local repl_set_host="${MONGODB_REPLICA_SET_NAME}/${MONGODB_INITIAL_PRIMARY_HOST}"
+
+    result=$(mongodb_execute "$MONGODB_INITIAL_PRIMARY_ROOT_USER" "$MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD" "admin" "$repl_set_host" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" <<EOF
 rs.add('$node:$MONGODB_PORT_NUMBER')
 EOF
 )
@@ -659,7 +661,9 @@ mongodb_configure_primary() {
 mongodb_is_node_confirmed() {
     local -r node="${1:?node is required}"
 
-    result=$(mongodb_execute "$MONGODB_INITIAL_PRIMARY_ROOT_USER" "$MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD" "admin" "$MONGODB_INITIAL_PRIMARY_HOST" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" <<EOF
+    local repl_set_host="${MONGODB_REPLICA_SET_NAME}/${MONGODB_INITIAL_PRIMARY_HOST}"
+
+    result=$(mongodb_execute "$MONGODB_INITIAL_PRIMARY_ROOT_USER" "$MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD" "admin" "$repl_set_host" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" <<EOF
 rs.status().members
 EOF
 )
@@ -702,7 +706,9 @@ mongodb_is_primary_node_up() {
 
     debug "Validating $host as primary node..."
 
-    result=$(mongodb_execute "$user" "$password" "admin" "$host" "$port" <<EOF
+    local repl_set_host="${MONGODB_REPLICA_SET_NAME}/${MONGODB_INITIAL_PRIMARY_HOST}"
+
+    result=$(mongodb_execute "$user" "$password" "admin" "$repl_set_host" "$port" <<EOF
 db.isMaster().ismaster
 EOF
 )
@@ -724,8 +730,10 @@ mongodb_is_node_available() {
     local -r user="${3:?user is required}"
     local -r password="${4:-}"
 
+    local repl_set_host="${MONGODB_REPLICA_SET_NAME}/${MONGODB_INITIAL_PRIMARY_HOST}"
+
     local result
-    result=$(mongodb_execute "$user" "$password" "admin" "$host" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" <<EOF
+    result=$(mongodb_execute "$user" "$password" "admin" "$repl_set_host" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" <<EOF
 db.getUsers()
 EOF
 )
